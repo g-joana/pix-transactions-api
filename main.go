@@ -8,10 +8,11 @@ import (
 	"io" // read all?
 	"encoding/json" // marshall / unmarshall
 	"errors"
+	// "github.com/joho/godotenv"
 )
 
 const (
-    UserAgent      = "convem"
+    UserAgent      = "pixpayments"
     Accept         = "application/json"
     ContentType    = "application/json"
 )
@@ -32,8 +33,16 @@ type Charge struct {
     Name        string `json:"name"`
 }
 
+type QRcode struct {
+    Object      string `json:"object"`
+    Id          string `json:"id"`
+    DateCreated string `json:"dateCreated"`
+    Name        string `json:"name"`
+}
+
 func main() {
 	// apiURL := "https://sandbox.asaas.com/api/v3"
+	// err := godotenv.Load()
 
 	// start server
 	mux := http.NewServeMux()
@@ -47,10 +56,22 @@ func router(w http.ResponseWriter, r *http.Request) {
 
 	// createQRcode()
 	// createPixKey()
-	// createCustomer()
+	customer, err := createCustomer()
+	if err != nil {
+		fmt.Println("\nErro: nao criou customer\n", err) //?
+		return
+	}
+	charge, err := createCharge(customer.Id)
+	if err != nil {
+		fmt.Println("\nErro: nao criou charge\n", err) //?
+		return
+	}
+	fmt.Println("")
+	fmt.Println(charge.Id)
+	getQRcode(charge.Id)
+	fmt.Println("")
 }
 
-//TEST:
 func newRequest(method string, endpoint string, payload *strings.Reader) (*http.Response, error) {
 
 	req, err := http.NewRequest(method, endpoint, payload)
@@ -71,57 +92,81 @@ func newRequest(method string, endpoint string, payload *strings.Reader) (*http.
 		return nil, err
 	}
 	fmt.Printf("Response: \n%v\n",res)
-
-	defer res.Body.Close()
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println("\nErro: body deu ruim\n", err) //?
-		return nil, err
-	}
-	fmt.Println(string(body))
 	return res, nil
 }
 
-//TEST:
-func printResBody(res *http.Response) error {
-	
-	defer res.Body.Close()
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println("\nErro ao ler body\n", err) //?
-		return errors.New("erro leitura do body da req")
-	}
-	fmt.Println(string(body))
-	return nil
-}
-
-//TEST:
 func createCustomer() (*Customer, error) {
 	
 	endpoint := "https://sandbox.asaas.com/api/v3/customers"
 	payload := strings.NewReader("{\"name\":\"Cliente\",\"cpfCnpj\":\"483.035.160-86\"}")
 	res, _ := newRequest("POST", endpoint, payload)
-	var customer *Customer
+
+	var customer = Customer{}
 	defer res.Body.Close()
-	body, _ := io.ReadAll(res.Body)
-	err := json.Unmarshal([]byte(body), customer)
+	body, e := io.ReadAll(res.Body)
+	if e != nil {
+		fmt.Println("\nErro: deu ruim lendo body\n", e) //?
+		return nil, errors.New("body")
+	}
+	fmt.Println(string(body))
+	err := json.Unmarshal([]byte(body), &customer)
 	if err != nil {
 		fmt.Println("\nErro: deu ruim no customer\n", err) //?
 		return nil, errors.New("customer deu ruim")
 	}
-	return customer, nil
+	return &customer, nil
 }
 
-//IN PROGRESS:
-func createCharge(customerId string) Charge {
+func createCharge(customerId string) (*Charge, error) {
 
 	endpoint := "https://sandbox.asaas.com/api/v3/payments"
 	payload := strings.NewReader("{\"billingType\":\"PIX\",\"customer\":" + customerId + ",\"value\":100,\"dueDate\":\"2025-01-01\"}")
-	newRequest("POST", endpoint, payload)
+	res, _ := newRequest("POST", endpoint, payload)
+
+	defer res.Body.Close()
+	body, e := io.ReadAll(res.Body)
+	if e != nil {
+		fmt.Println("\nErro: deu ruim lendo body\n", e) //?
+		return nil, errors.New("body")
+	}
+	fmt.Println("")
+	fmt.Println(string(body))
+	var charge = Charge{}
+	err := json.Unmarshal([]byte(body), &charge)
+	if err != nil {
+		fmt.Println("\nErro: deu ruim no customer\n", err) //?
+		return nil, errors.New("customer deu ruim")
+	}
+	return &charge, nil
 }
 
-func createQRcode() {
-
+func getQRcode(chargeId string) () {
+	
+	endpoint := "https://sandbox.asaas.com/api/v3/payments/" + chargeId + "/pixQrCode"
+	payload := strings.NewReader("")
+	res, err := newRequest("GET", endpoint, payload)
+	if err != nil {
+		fmt.Println("\nErro: deu ruim lendo body\n", err) //?
+		// return nil, errors.New("body")
+		return
+	}
+	defer res.Body.Close()
+	body, e := io.ReadAll(res.Body)
+	if e != nil {
+		fmt.Println("\nErro: deu ruim lendo body\n", e) //?
+		// return nil, errors.New("body")
+		return
+	}
+	fmt.Println("")
+	fmt.Println(string(body))
+	// var QRcode = QRcode{}
+	// err := json.Unmarshal([]byte(body), &QRcode)
+	// if err != nil {
+	// 	fmt.Println("\nErro: deu ruim no customer\n", err) //?
+	// 	// return nil, errors.New("customer deu ruim")
+	// }
+	// return &charge, nil
+	return
 }
 
 func createStaticQRcode() {
