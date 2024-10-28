@@ -26,7 +26,7 @@ type Customer struct {
     Name        string `json:"name"`
 }
 
-type Charge struct {
+type Payment struct {
     Object      string `json:"object"`
     Id          string `json:"id"`
     DateCreated string `json:"dateCreated"`
@@ -61,14 +61,14 @@ func router(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("\nErro: nao criou customer\n", err) //?
 		return
 	}
-	charge, err := createCharge(customer.Id)
+	payment, err := createPayment(customer.Id)
 	if err != nil {
-		fmt.Println("\nErro: nao criou charge\n", err) //?
+		fmt.Println("\nErro: nao criou pagamento\n", err) //?
 		return
 	}
 	fmt.Println("")
-	fmt.Println(charge.Id)
-	getQRcode(charge.Id)
+	fmt.Println(payment.Id)
+	getQRcode(payment.Id)
 	fmt.Println("")
 }
 
@@ -117,7 +117,7 @@ func createCustomer() (*Customer, error) {
 	return &customer, nil
 }
 
-func createCharge(customerId string) (*Charge, error) {
+func createPayment(customerId string) (*Payment, error) {
 
 	endpoint := "https://sandbox.asaas.com/api/v3/payments"
 	payload := strings.NewReader("{\"billingType\":\"PIX\",\"customer\":" + customerId + ",\"value\":100,\"dueDate\":\"2025-01-01\"}")
@@ -131,18 +131,18 @@ func createCharge(customerId string) (*Charge, error) {
 	}
 	fmt.Println("")
 	fmt.Println(string(body))
-	var charge = Charge{}
-	err := json.Unmarshal([]byte(body), &charge)
+	var payment = Payment{}
+	err := json.Unmarshal([]byte(body), &payment)
 	if err != nil {
 		fmt.Println("\nErro: deu ruim no customer\n", err) //?
 		return nil, errors.New("customer deu ruim")
 	}
-	return &charge, nil
+	return &payment, nil
 }
 
-func getQRcode(chargeId string) () {
+func getQRcode(paymentId string) () {
 	
-	endpoint := "https://sandbox.asaas.com/api/v3/payments/" + chargeId + "/pixQrCode"
+	endpoint := "https://sandbox.asaas.com/api/v3/payments/" + paymentId + "/pixQrCode"
 	payload := strings.NewReader("")
 	res, err := newRequest("GET", endpoint, payload)
 	if err != nil {
