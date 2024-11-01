@@ -6,7 +6,64 @@ import (
 	"io" // read all?
 	"encoding/json" // marshall / unmarshall
 	"errors"
+	"net/http"
 )
+
+// REVIEW: define structs correctly
+type WebhookPayload struct {
+    Event   string      `json:"event"`
+    Payment PaymentInfo `json:"payment"`
+}
+
+type PaymentInfo struct {
+    ID            string  `json:"id"`
+    Value         float64 `json:"value"`
+    // add others?
+}
+
+func webhookHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var payload WebhookPayload
+	err := json.NewDecoder(r.Body).Decode(&payload)
+	if err != nil {
+		http.Error(w, "Payload inválido", http.StatusBadRequest)
+		return
+	}
+
+	switch payload.Event {
+	case "PAYMENT_CREATED":
+		createPayment(payload.Payment)
+	case "PAYMENT_RECEIVED":
+		receivePayment(payload.Payment)
+	case "PAYMENT_OVERDUE":
+		attPayment(payload.Payment)
+	default:
+		fmt.Printf("Este evento não é aceito: %s\n", payload.Event)
+	}
+
+	response := map[string]bool{"received": true}
+	json.NewEncoder(w).Encode(response)
+	// retornar resposta?
+
+	fmt.Printf("Webhook recebido: %s\n", payload.Message)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Webhook recebido!"))
+}
+
+// WORKING!!
+func createWebhook() () {
+	endpoint := "https://sandbox.asaas.com/api/v3/webhooks"
+	payload := strings.NewReader("{\"name\":\"CASH IN\",\"url\":\"https://lazy-motorcycle-68.webhook.cool\",\"enabled\":true,\"interrupted\":false,\"apiVersion\":3,\"sendType\":\"SEQUENTIALLY\",\"events\":[\"PAYMENT_RECEIVED\",\"PAYMENT_CREATED\",\"PAYMENT_OVERDUE\"],\"email\":\"jou.42.rio@gmail.com\"}")
+	res, _ := newRequest("POST", endpoint, payload)
+
+	defer res.Body.Close()
+	body, _ := io.ReadAll(res.Body)
+	fmt.Println(string(body))
+}
 
 func createCustomer() (*Customer, error) {
 	

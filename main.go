@@ -23,6 +23,7 @@ type Payment struct {
     Name        string `json:"name"`
 }
 
+// fix fields:
 type QRcode struct {
     Object      string `json:"object"`
     Id          string `json:"id"`
@@ -37,28 +38,29 @@ func main() {
 	// start server
 	// STUDY:
 	mux := http.NewServeMux()
-	mux.HandleFunc("/main", router)
+	mux.HandleFunc("/webhook", router)
 	http.ListenAndServe(":8080", mux)
 	fmt.Println("server on")
 }
 
 func router(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("vc acessou a rota /main"));
+	w.Write([]byte("vc acessou a rota /webhook"));
 
 	// createQRcode()
 	// createPixKey()
-	customer, err := createCustomer()
-	if err != nil {
-		fmt.Println("\nErro: nao criou customer\n", err) //?
-		return
-	}
-	payment, err := createPayment(customer.Id)
-	if err != nil {
-		fmt.Println("\nErro: nao criou pagamento\n", err) //?
-		return
-	}
-	fmt.Println("")
-	fmt.Println(payment.Id)
-	getQRcode(payment.Id)
-	fmt.Println("")
+	// customer, err := createCustomer()
+	// if err != nil {
+	// 	fmt.Println("\nErro: nao criou customer\n", err) //?
+	// 	return
+	// }
+	// payment, err := createPayment(customer.Id)
+	// if err != nil {
+	// 	fmt.Println("\nErro: nao criou pagamento\n", err) //?
+	// 	return
+	// }
+	// fmt.Println("")
+	// fmt.Println(payment.Id)
+	// getQRcode(payment.Id)
+	// fmt.Println("")
+	// createWebhook()
 }
