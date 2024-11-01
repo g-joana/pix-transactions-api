@@ -41,6 +41,8 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 		receivePayment(payload.Payment)
 	case "PAYMENT_OVERDUE":
 		attPayment(payload.Payment)
+	case "PAYMENT_DELETED":
+		removePayment(payload.Payment)
 	default:
 		fmt.Printf("Este evento não é aceito: %s\n", payload.Event)
 	}
@@ -49,9 +51,9 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 	// retornar resposta?
 
-	fmt.Printf("Webhook recebido: %s\n", payload.Message)
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Webhook recebido!"))
+	// fmt.Printf("Webhook recebido: %s\n", payload.Message)
+	// w.WriteHeader(http.StatusOK)
+	// w.Write([]byte("Webhook recebido!"))
 }
 
 // WORKING!!
