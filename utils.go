@@ -7,9 +7,9 @@ import (
 )
 
 const (
-    UserAgent      = "pixpayments"
-    Accept         = "application/json"
-    ContentType    = "application/json"
+	UserAgent      = "pixpayments"
+	Accept         = "application/json"
+	ContentType    = "application/json"
 )
 
 func newRequest(method string, endpoint string, payload *strings.Reader) (*http.Response, error) {
@@ -19,6 +19,7 @@ func newRequest(method string, endpoint string, payload *strings.Reader) (*http.
 		fmt.Println("\nErro ao criar requisição:\n", err)
 		return nil, err
 	}
+
 
 	// Header.Add appends, while Set over-writes
 	req.Header.Set("User-Agent", UserAgent)

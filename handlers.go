@@ -7,6 +7,9 @@ import (
 	"encoding/json" // marshall / unmarshall
 	"errors"
 	"net/http"
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+	"context" //?
 )
 
 // REVIEW: define structs correctly
@@ -21,6 +24,34 @@ type PaymentInfo struct {
     // add others?
 }
 
+/*
+type WebhookRequest struct {
+    // Defina a estrutura de dados que você espera receber
+    EventType string `json:"event_type"`
+    Data      string `json:"data"`
+}
+
+// lambda func:
+func HandleRequest(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+    var webhookReq WebhookRequest
+
+    // Decodificar o corpo do webhook
+    err := json.Unmarshal([]byte(req.Body), &webhookReq)
+    if err != nil {
+        return events.APIGatewayProxyResponse{StatusCode: http.StatusBadRequest}, nil
+    }
+
+    // Processar o webhook (exemplo simples)
+    fmt.Printf("Recebido evento: %s com dados: %s\n", webhookReq.EventType, webhookReq.Data)
+
+    // Retornar uma resposta
+    return events.APIGatewayProxyResponse{
+        StatusCode: http.StatusOK,
+        Body:       "Webhook recebido com sucesso",
+    }, nil
+}
+*/
+
 func webhookHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
@@ -28,6 +59,8 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var payload WebhookPayload
+	// unmarshal reads from a slice of bytes
+	// decoder reads json from a reader.io
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		http.Error(w, "Payload inválido", http.StatusBadRequest)
