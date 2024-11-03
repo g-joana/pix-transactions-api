@@ -7,15 +7,15 @@ import (
 	"encoding/json" // marshall / unmarshall
 	"errors"
 	"net/http"
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
-	"context" //?
+	// "github.com/aws/aws-lambda-go/events"
+	// "github.com/aws/aws-lambda-go/lambda"
+	// "context" //?
 )
 
 // REVIEW: define structs correctly
-type WebhookPayload struct {
+type PaymentINFO struct {
     Event   string      `json:"event"`
-    Payment PaymentInfo `json:"payment"`
+    event PaymentInfo `json:"payment"`
 }
 
 type PaymentInfo struct {
@@ -58,7 +58,7 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var payload WebhookPayload
+	var payload PaymentINFO
 	// unmarshal reads from a slice of bytes
 	// decoder reads json from a reader.io
 	err := json.NewDecoder(r.Body).Decode(&payload)
@@ -69,13 +69,13 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch payload.Event {
 	case "PAYMENT_CREATED":
-		createPayment(payload.Payment)
+		createPayment(payload.event)
 	case "PAYMENT_RECEIVED":
-		receivePayment(payload.Payment)
+		receivePayment(payload.event)
 	case "PAYMENT_OVERDUE":
-		attPayment(payload.Payment)
+		attPayment(payload.event)
 	case "PAYMENT_DELETED":
-		removePayment(payload.Payment)
+		removePayment(payload.event)
 	default:
 		fmt.Printf("Este evento não é aceito: %s\n", payload.Event)
 	}
@@ -89,7 +89,7 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 	// w.Write([]byte("Webhook recebido!"))
 }
 
-// WORKING!!
+// WIP:
 func createWebhook() () {
 	endpoint := "https://sandbox.asaas.com/api/v3/webhooks"
 	payload := strings.NewReader("{\"name\":\"CASH IN\",\"url\":\"https://lazy-motorcycle-68.webhook.cool\",\"enabled\":true,\"interrupted\":false,\"apiVersion\":3,\"sendType\":\"SEQUENTIALLY\",\"events\":[\"PAYMENT_RECEIVED\",\"PAYMENT_CREATED\",\"PAYMENT_OVERDUE\"],\"email\":\"jou.42.rio@gmail.com\"}")
