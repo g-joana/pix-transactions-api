@@ -7,29 +7,24 @@ import (
 	"encoding/json" // marshall / unmarshall
 	"errors"
 	"net/http"
-	// "github.com/aws/aws-lambda-go/events"
-	// "github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-lambda-go/events"
+	_"github.com/aws/aws-lambda-go/lambda"
+	"context"
 	// "context" //?
 )
 
-// REVIEW: define structs correctly
-type PaymentINFO struct {
-    Event   string      `json:"event"`
-    event PaymentInfo `json:"payment"`
-}
-
-type PaymentInfo struct {
-    ID            string  `json:"id"`
-    Value         float64 `json:"value"`
-    // add others?
-}
-
-/*
-type WebhookRequest struct {
-    // Defina a estrutura de dados que você espera receber
-    EventType string `json:"event_type"`
-    Data      string `json:"data"`
-}
+//
+// type PaymentInfo struct {
+//     ID            string  `json:"id"`
+//     Value         float64 `json:"value"`
+//     // add others?
+// }
+//
+// type WebhookRequest struct {
+//     // Defina a estrutura de dados que você espera receber
+//     EventType string `json:"event_type"`
+//     Data      string `json:"data"`
+// }
 
 // lambda func:
 func HandleRequest(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -37,12 +32,24 @@ func HandleRequest(ctx context.Context, req events.APIGatewayProxyRequest) (even
 
     // Decodificar o corpo do webhook
     err := json.Unmarshal([]byte(req.Body), &webhookReq)
-    if err != nil {
-        return events.APIGatewayProxyResponse{StatusCode: http.StatusBadRequest}, nil
+    if err != nil { return events.APIGatewayProxyResponse{StatusCode: http.StatusBadRequest}, nil
     }
 
     // Processar o webhook (exemplo simples)
-    fmt.Printf("Recebido evento: %s com dados: %s\n", webhookReq.EventType, webhookReq.Data)
+    fmt.Printf("Recebido evento: %s com dados: %v\n", webhookReq.Event, webhookReq.Payment)
+
+	// switch webhookReq.Event {
+	// case "PAYMENT_CREATED":
+	// 	createPayment(webhookReq.Payment)
+	// case "PAYMENT_RECEIVED":
+	// 	receivePayment(webhookReq.Payment)
+	// case "PAYMENT_OVERDUE":
+	// 	attPayment(webhookReq.Payment)
+	// case "PAYMENT_DELETED":
+	// 	removePayment(webhookReq.Payment)
+	// default:
+	// 	fmt.Printf("Este evento não é aceito: %s\n", webhookReq.Event)
+	// }
 
     // Retornar uma resposta
     return events.APIGatewayProxyResponse{
@@ -50,8 +57,7 @@ func HandleRequest(ctx context.Context, req events.APIGatewayProxyRequest) (even
         Body:       "Webhook recebido com sucesso",
     }, nil
 }
-*/
-
+/*
 func webhookHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
@@ -67,18 +73,6 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch payload.Event {
-	case "PAYMENT_CREATED":
-		createPayment(payload.event)
-	case "PAYMENT_RECEIVED":
-		receivePayment(payload.event)
-	case "PAYMENT_OVERDUE":
-		attPayment(payload.event)
-	case "PAYMENT_DELETED":
-		removePayment(payload.event)
-	default:
-		fmt.Printf("Este evento não é aceito: %s\n", payload.Event)
-	}
 
 	response := map[string]bool{"received": true}
 	json.NewEncoder(w).Encode(response)
@@ -88,6 +82,7 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 	// w.WriteHeader(http.StatusOK)
 	// w.Write([]byte("Webhook recebido!"))
 }
+*/
 
 // WIP:
 func createWebhook() () {
@@ -174,14 +169,14 @@ func getQRcode(paymentId string) () {
 	return
 }
 
-func createStaticQRcode() {
-	endpoint := "https://sandbox.asaas.com/api/v3/pix/qrCodes/static"
-	payload := strings.NewReader("{\"addressKey\":\"cbabe4f8-65b8-4dae-9cfb-1577fccf7cd2\",\"value\":100,\"format\":\"ALL\",\"expirationSeconds\":120,\"allowsMultiplePayments\":false}")
-	newRequest("POST", endpoint, payload)
-}
-
-func createPixKey() {
-	endpoint := "https://sandbox.asaas.com/api/v3/pix/addressKeys"
-	payload := strings.NewReader("{\"type\":\"EVP\"}")
-	newRequest("POST", endpoint, payload)
-}
+// func createStaticQRcode() {
+// 	endpoint := "https://sandbox.asaas.com/api/v3/pix/qrCodes/static"
+// 	payload := strings.NewReader("{\"addressKey\":\"cbabe4f8-65b8-4dae-9cfb-1577fccf7cd2\",\"value\":100,\"format\":\"ALL\",\"expirationSeconds\":120,\"allowsMultiplePayments\":false}")
+// 	newRequest("POST", endpoint, payload)
+// }
+//
+// func createPixKey() {
+// 	endpoint := "https://sandbox.asaas.com/api/v3/pix/addressKeys"
+// 	payload := strings.NewReader("{\"type\":\"EVP\"}")
+// 	newRequest("POST", endpoint, payload)
+// }
